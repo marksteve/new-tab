@@ -1,45 +1,31 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Flex, Box} from 'reflexbox'
-import {
-  Panel,
-  PanelHeader,
-  Text
-} from 'rebass'
+import {combineReducers, createStore} from 'redux'
+import {Provider, connect} from 'react-redux'
 
-const Project = ({name}, i) => {
-  return (
-    <Box key={i} col={3} p={2}>
-      <Panel>
-        <PanelHeader>{name}</PanelHeader>
-      </Panel>
-    </Box>
-  )
-}
+import * as actions from './actions'
+import * as reducers from './reducers'
+import {App} from './components'
 
-class App extends React.Component {
-  render() {
-    let {projects} = this.props
-    return (
-      <Box p={2}>
-        <Box px={2}>
-          <h1>New Tab</h1>
-        </Box>
-        <Flex align='flex-start'>
-          {projects.map(Project)}
-        </Flex>
-      </Box>
-    )
+const store = createStore(combineReducers(reducers))
+
+const ConnectedApp = connect(
+  (state) => state,
+  (dispatch) => {
+    return {
+      actions: {
+        toggleUI: (name, isToggled) => dispatch(actions.toggleUI(name, isToggled)),
+        addGroup: (group) => dispatch(actions.addGroup(group)),
+        addItem: (group, item) => dispatch(actions.addItem(group, item)),
+      },
+    }
   }
-}
+)(App)
 
-var testProps = {
-  projects: [
-    {name: "Personal"},
-    {name: "Blank"},
-    {name: "PythonPH"},
-    {name: "Incorgito"},
-  ],
-}
+ReactDOM.render(
+  <Provider store={store}>
+    <ConnectedApp />
+  </Provider>,
+  document.getElementById('app')
+)
 
-ReactDOM.render(<App {...testProps} />, document.getElementById('app'))
