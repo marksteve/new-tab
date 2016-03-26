@@ -23,5 +23,13 @@ export function groups(state=[], action) {
 }
 
 export function items(state={}, action) {
+  switch (action.type) {
+  case 'ADD_ITEM':
+    let groupItems = state[action.group] || []
+    return {
+      ...state,
+      [action.group]: groupItems.concat(action.item),
+    }
+  }
   return state
 }
