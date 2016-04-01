@@ -6,18 +6,18 @@ export function toggleUI(name, isToggled) {
   }
 }
 
-export function addGroup(group) {
+export function addList(list) {
   return {
-    type: 'ADD_GROUP',
-    group,
+    type: 'ADD_LIST',
+    list,
   }
 }
 
-export function addItem(group, item) {
+export function editList(index, list) {
   return {
-    type: 'ADD_ITEM',
-    group,
-    item,
+    type: 'EDIT_LIST',
+    index,
+    list,
   }
 }
 

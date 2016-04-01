@@ -20,18 +20,20 @@ const ConnectedApp = connect(
     return {
       actions: {
         toggleUI: (name, isToggled) => dispatch(actions.toggleUI(name, isToggled)),
-        addGroup: (group) => dispatch(actions.addGroup(group)),
-        addItem: (group, item) => dispatch(actions.addItem(group, item)),
+        addList: (list) => dispatch(actions.addList(list)),
+        editList: (index, list) => dispatch(actions.editList(index, list)),
       },
     }
   }
 )(App)
 
 storage.getItem('state', (err, initialState) => {
-
   const store = createStore(
     combineReducers(reducers),
-    initialState,
+    initialState || {
+      ui: {},
+      lists: [],
+    },
     applyMiddleware(storageSyncer)
   )
 

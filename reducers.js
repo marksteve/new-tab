@@ -10,26 +10,22 @@ export function ui(state={}, action) {
   }
 }
 
-export function groups(state=[], action) {
+export function lists(state=[], action) {
   switch (action.type) {
-  case 'ADD_GROUP':
-    if (~state.indexOf(action.group)) {
-      return state
-    }
-    return state.concat(action.group)
+  case 'ADD_LIST':
+    return state.concat(action.list)
+  case 'EDIT_LIST':
+    return state.map(function(list, i) {
+      if (i !== action.index) {
+        return list
+      } else {
+        return {
+          ...list,
+          ...action.list,
+        }
+      }
+    })
   default:
     return state
   }
-}
-
-export function items(state={}, action) {
-  switch (action.type) {
-  case 'ADD_ITEM':
-    let groupItems = state[action.group] || []
-    return {
-      ...state,
-      [action.group]: groupItems.concat(action.item),
-    }
-  }
-  return state
 }

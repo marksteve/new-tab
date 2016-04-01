@@ -1,5 +1,6 @@
 import React from 'react'
 import {Flex, Box} from 'reflexbox'
+import marked from 'marked'
 
 const ButtonIcon = ({image, size}) => {
   return (
@@ -10,107 +11,63 @@ const ButtonIcon = ({image, size}) => {
   )
 }
 
-const Item = ({name, url}, i) => {
-  return (
-    <div className="px2 pt2">
-      <a href={url} target="_blank">
-        {name}
-      </a>
-    </div>
-  )
-}
-
-class AddItem extends React.Component {
-  componentDidUpdate(prevProps) {
-    let {name, ui} = this.props
-    let uiKey = `addItem.${name}`
-    if (prevProps.ui[uiKey] !== ui[uiKey] && ui[uiKey]) {
-      this.refs.form.name.focus()
-    }
-  }
+class List extends React.Component {
   render() {
-    let {name, ui, actions} = this.props
-    let uiKey = `addItem.${name}`
+    let {ui, actions, index, name, content} = this.props
+    let editKey = `editList:${index}`
+    let html = emojione.toImage(marked(content || ''))
+    let editToggled = ui[editKey]
     return (
-      <div className="p2">
-      {ui[uiKey] ? (
-        <form ref="form" onSubmit={this.onSubmit.bind(this)}>
-          <input
-            className="input-md border-box col-12 mb2"
-            name="name"
-            type="text"
-            placeholder="Item name"
-          />
-          <input
-            className="input-md border-box col-12 mb2"
-            name="url"
-            type="text"
-            placeholder="Item url"
-          />
-          <div className="flex">
-            <button
-              className="input-sm border-box col-6"
-              type="submit"
-            >
-              <ButtonIcon image="add" size="sm" />
-              Add item
-            </button>
-            <button
-              className="input-sm border-box col-6"
-              type="button"
-              onClick={actions.toggleUI.bind(this, uiKey, false)}
-            >
-              <ButtonIcon image="done" size="sm" />
-              Done
-            </button>
+      <Box col={3} p={2}>
+        <div className="list relative">
+          {editToggled ? (
+          <div>
+            <input
+              className="input-md col-12 mb1"
+              type="text"
+              onChange={this.onChange.bind(this, 'name')}
+              value={name}
+            />
+            <textarea
+              className="col-12"
+              rows="10"
+              onChange={this.onChange.bind(this, 'content')}
+              value={content}
+            />
           </div>
-        </form>
-      ) : (
-        <button
-          className="input-sm border-box col-12"
-          onClick={actions.toggleUI.bind(this, uiKey, true)}
-        >
-          <ButtonIcon image="add" size="sm" />
-          Add an item
-        </button>
-      )}
-      </div>
+          ) : (
+          <div className="list-content">
+            <h2 className="h3 mt0">{name}</h2>
+            <div
+              className="markdown"
+              dangerouslySetInnerHTML={{__html: html}}
+            />
+          </div>
+          )}
+          <button
+            className="mt2"
+            onClick={actions.toggleUI.bind(this, editKey, !editToggled)}
+          >
+            <ButtonIcon
+              image={editToggled ? "done" : "edit"}
+              size="sm"
+            />
+            {editToggled ? 'Done editing' : 'Edit list'}
+          </button>
+        </div>
+      </Box>
     )
   }
-  onSubmit(e) {
-    e.preventDefault()
-    let {name, actions} = this.props
-    let {form} = this.refs
-    actions.addItem(name, {
-      name: form.name.value,
-      url: form.url.value,
-    })
-    form.name.value = null
-    form.name.focus()
-    form.url.value = null
+  onChange(attr, e) {
+    let {actions, index} = this.props
+    actions.editList(index, {[attr]: e.target.value})
   }
 }
 
-const Group = (props, i) => {
-  let {name, items} = props
-  let groupItems = items[name] || []
-  return (
-    <Box col={3} p={2}>
-      <div className="group">
-        <h2 className="h4 m0 p2">{name}</h2>
-        {groupItems.map((item, i) => (
-          <Item key={i} {...item} />
-        ))}
-        <AddItem {...props} />
-      </div>
-    </Box>
-  )
-}
-
-class AddGroup extends React.Component {
+class AddList extends React.Component {
   componentDidUpdate(prevProps) {
-    if (prevProps.ui.addGroup !== this.props.ui.addGroup &&
-        this.props.ui.addGroup) {
+    if (prevProps.ui.addList !== this.props.ui.addList &&
+        this.props.ui.addList) {
       this.refs.form.name.focus()
     }
   }
@@ -118,23 +75,23 @@ class AddGroup extends React.Component {
     let {ui, actions} = this.props
     return (
       <div className="absolute right-0 bottom-0 p3">
-        {ui.addGroup ? (
+        {ui.addList ? (
         <form ref="form" onSubmit={this.onSubmit.bind(this)}>
           <input
             className="input-md"
             name="name"
             type="text"
-            placeholder="Group name"
-            onBlur={actions.toggleUI.bind(this, 'addGroup', false)}
+            placeholder="List name"
+            onBlur={actions.toggleUI.bind(this, 'addList', false)}
           />
         </form>
         ) : (
         <button
           className="input-md"
-          onClick={actions.toggleUI.bind(this, 'addGroup', true)}
+          onClick={actions.toggleUI.bind(this, 'addList', true)}
         >
           <ButtonIcon image="add" size="md" />
-          Create new group
+          Create new list
         </button>
         )}
       </div>
@@ -144,26 +101,26 @@ class AddGroup extends React.Component {
     e.preventDefault()
     let {actions} = this.props
     let {form} = this.refs
-    actions.addGroup(form.name.value)
+    actions.addList({name: form.name.value})
     form.name.value = null
   }
 }
 
 export class App extends React.Component {
   render() {
-    let {ui, groups, actions} = this.props
+    let {ui, lists, actions} = this.props
     let {toggleUI} = actions
     return (
       <Box p={2}>
         <Box px={2}>
-          <h1 className="m0">New Tab</h1>
+          <h1 className="caps m0">New Tab</h1>
         </Box>
         <Flex align='flex-start'>
-          {groups.map((name, i) => (
-            <Group key={i} name={name} {...this.props} />
+          {lists.map((props, i) => (
+            <List key={i} index={i} {...this.props} {...props} />
           ))}
         </Flex>
-        <AddGroup {...this.props} />
+        <AddList {...this.props} />
       </Box>
     )
   }
